@@ -1,0 +1,59 @@
+import numpy as np
+import pandas as pd
+
+# ------------------ STEP 1: Create sample data using NumPy ------------------
+np.random.seed(42)  # For reproducibility
+
+num_students = 10
+names = np.array(["Alice", "Bob", "Charlie", "David", "Eve", 
+                  "Frank", "Grace", "Hannah", "Ivy", "Jack"])
+subjects = ["Math", "Science", "English"]
+
+# Random marks between 50 and 100 for each subject
+marks = np.random.randint(50, 101, size=(num_students, len(subjects)))
+
+# Calculate average marks using NumPy
+avg_marks = np.mean(marks, axis=1)
+grades = np.where(avg_marks >= 90, "A",
+          np.where(avg_marks >= 75, "B",
+          np.where(avg_marks >= 60, "C", "D")))
+
+# ------------------ STEP 2: Create DataFrame using Pandas ------------------
+data = pd.DataFrame(marks, columns=subjects)
+data.insert(0, "Name", names)
+data["Average"] = avg_marks
+data["Grade"] = grades
+
+print("🎓 Student Data:\n")
+print(data, "\n")
+
+# ------------------ STEP 3: Analyze the data ------------------
+print("📊 Basic Statistics (using Pandas describe()):")
+print(data.describe(), "\n")
+
+# Highest Scorer
+topper = data.loc[data["Average"].idxmax()]
+print("🏆 Topper of the class:")
+print(topper, "\n")
+
+# Students with Grade A
+print("🅰 Students who got Grade A:")
+print(data[data["Grade"] == "A"], "\n")
+
+# ------------------ STEP 4: NumPy + Pandas Integration ------------------
+# Calculate z-scores using NumPy and add as new columns
+for subject in subjects:
+    z_scores = (data[subject] - np.mean(data[subject])) / np.std(data[subject])
+    data[f"{subject}_Zscore"] = np.round(z_scores, 2)
+
+print("📈 Data with Z-Scores added:\n")
+print(data, "\n")
+
+# ------------------ STEP 5: Grouping and Aggregation ------------------
+grade_group = data.groupby("Grade")["Average"].agg(["count", "mean", "min", "max"])
+print("📚 Grade-wise Performance Summary:\n")
+print(grade_group, "\n")
+
+# ------------------ STEP 6: Export to CSV ------------------
+data.to_csv("student_performance.csv", index=False)
+print("✅ Data exported to 'student_performance.csv'")
